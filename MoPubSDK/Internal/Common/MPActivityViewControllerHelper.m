@@ -76,12 +76,24 @@
             [[MPActivityItemProviderWithSubject alloc] initWithSubject:subject body:body];
         UIActivityViewController *activityViewController =
             [[UIActivityViewController alloc] initWithActivityItems:@[activityItemProvider] applicationActivities:nil];
-        activityViewController.completionHandler = ^
-            (NSString* activityType, BOOL completed) {
+        
+        if (floor(NSFoundationVersionNumber) >= NSFoundationVersionNumber_iOS_8_0) {
+            //for iOS >= 8
+            activityViewController.completionWithItemsHandler = ^
+            (NSString * __nullable activityType, BOOL completed, NSArray * __nullable returnedItems, NSError * __nullable activityError) {
                 if ([self.delegate respondsToSelector:@selector(activityViewControllerDidDismiss)]) {
                     [self.delegate activityViewControllerDidDismiss];
                 }
             };
+        } else {
+            //for iOS < 8
+            activityViewController.completionHandler = ^
+                (NSString* activityType, BOOL completed) {
+                    if ([self.delegate respondsToSelector:@selector(activityViewControllerDidDismiss)]) {
+                        [self.delegate activityViewControllerDidDismiss];
+                    }
+                };
+        }
         return activityViewController;
     } else {
         return nil;
