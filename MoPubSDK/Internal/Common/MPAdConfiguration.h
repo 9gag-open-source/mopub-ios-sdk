@@ -51,6 +51,10 @@ extern NSString * const kAdTypeClear;
 extern NSString * const kAdTypeNative;
 extern NSString * const kAdTypeNativeVideo;
 
+extern NSString * const kAdConfigGender;
+extern NSString * const kAdConfigBirthdate;
+extern NSString * const kAdConfigContentUrl;
+
 @interface MPAdConfiguration : NSObject
 
 @property (nonatomic, assign) MPAdType adType;

@@ -27,4 +27,9 @@
  */
 @property (nonatomic, readwrite, copy) MPNativeViewSizeHandler viewSizeHandler;
 
+/*
+ * A dictionary to save ad realted custom option value like content url, gender and birthday. All keys will be merged to MPAdConfiguration customEventClassData when retireve the Ad success
+ */
+@property (nonatomic, strong) NSDictionary *customAdOptions;
+
 @end

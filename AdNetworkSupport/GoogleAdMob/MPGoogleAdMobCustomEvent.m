@@ -13,6 +13,7 @@
 #import "MPNativeAd.h"
 #import "MPGoogleAdMobNativeAdAdapter.h"
 #include "TargetConditionals.h"
+#import "MPAdConfiguration.h"
 
 @interface MPGoogleAdMobCustomEvent()
 @property(nonatomic, strong)GADAdLoader *loader;
@@ -41,12 +42,28 @@
     
 #endif
     
+    NSNumber *genderInNumFormat = [info objectForKey:kAdConfigGender];
+    if (genderInNumFormat != nil) {
+        request.gender = [genderInNumFormat integerValue];
+    }
+    
+    NSDate *birthdate = [info objectForKey:kAdConfigBirthdate];
+    if (birthdate != nil) {
+        request.birthday = birthdate;
+    }
+    
     CLLocation *location = [[CLLocationManager alloc] init].location;
     if (location) {
         [request setLocationWithLatitude:location.coordinate.latitude
                                longitude:location.coordinate.longitude
                                 accuracy:location.horizontalAccuracy];
     }
+    
+    NSString *contentUrl = [info objectForKey:kAdConfigContentUrl];
+    if (contentUrl != nil) {
+        request.contentURL = contentUrl;
+    }
+    
     request.requestAgent = @"MoPub";
     [self.loader loadRequest:request];
 }

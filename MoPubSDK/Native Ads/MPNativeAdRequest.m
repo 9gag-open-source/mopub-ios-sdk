@@ -25,6 +25,7 @@
 #import "MPNativeAdRenderer.h"
 #import "MPMoPubNativeCustomEvent.h"
 #import "MPNativeAdRendererConfiguration.h"
+#import "MPNativeAdRendererSettings.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -181,6 +182,12 @@
 
     if (customEventRendererConfig) {
         // Create a renderer from the config.
+        NSDictionary *customOptions = customEventRendererConfig.rendererSettings.customAdOptions;
+        if (customOptions) {            
+            NSMutableDictionary *finalCustomEventClassData = [[NSMutableDictionary alloc] initWithDictionary:configuration.customEventClassData];
+            [finalCustomEventClassData addEntriesFromDictionary:customOptions];
+            configuration.customEventClassData = finalCustomEventClassData;
+        }
         self.customEventRenderer = [[customEventRendererConfig.rendererClass alloc] initWithRendererSettings:customEventRendererConfig.rendererSettings];
         self.nativeCustomEvent = [[MPInstanceProvider sharedProvider] buildNativeCustomEventFromCustomClass:configuration.customEventClass delegate:self];
     } else {

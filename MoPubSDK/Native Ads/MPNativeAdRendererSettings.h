@@ -30,4 +30,6 @@
  */
 @property (nonatomic, readwrite, copy) MPNativeViewSizeHandler viewSizeHandler;
 
+@property (nonatomic, strong) NSDictionary *customAdOptions;
+
 @end

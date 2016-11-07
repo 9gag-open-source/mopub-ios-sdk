@@ -55,6 +55,10 @@ NSString * const kAdTypeNativeVideo = @"json_video";
 NSString * const kRewardedVideoCurrencyNameHeaderKey = @"X-Rewarded-Video-Currency-Name";
 NSString * const kRewardedVideoCurrencyAmountHeaderKey = @"X-Rewarded-Video-Currency-Amount";
 
+NSString * const kAdConfigGender = @"adMetaGender";
+NSString * const kAdConfigBirthdate = @"adMetaBirthdate";
+NSString * const kAdConfigContentUrl = @"adContentUrl";
+
 @interface MPAdConfiguration ()
 
 @property (nonatomic, copy) NSString *adResponseHTMLString;
