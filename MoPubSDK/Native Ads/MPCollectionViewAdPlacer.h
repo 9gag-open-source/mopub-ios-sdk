@@ -369,6 +369,8 @@
 
 @optional
 
+-(void)nativeAdDidLoadAtIndexPath:(NSIndexPath *)indexPath;
+
 /*
  * This method is called when a native ad, placed by the collection view ad placer, will present a modal view controller.
  *

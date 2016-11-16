@@ -119,12 +119,16 @@ static NSString * const kCollectionViewAdPlacerReuseIdentifier = @"MPCollectionV
     BOOL animationsWereEnabled = [UIView areAnimationsEnabled];
     //We only want to enable animations if the index path is before or within our visible cells
     BOOL animationsEnabled = ([(NSIndexPath *)[self.collectionView.indexPathsForVisibleItems lastObject] compare:indexPath] != NSOrderedAscending) && animationsWereEnabled;
-
+    
     [UIView setAnimationsEnabled:animationsEnabled];
 
     [self.collectionView insertItemsAtIndexPaths:@[indexPath]];
 
     [UIView setAnimationsEnabled:animationsWereEnabled];
+    
+    if ([self.delegate respondsToSelector:@selector(nativeAdDidLoadAtIndexPath:)]) {
+        [self.delegate nativeAdDidLoadAtIndexPath:indexPath];
+    }
 }
 
 - (void)adPlacer:(MPStreamAdPlacer *)adPlacer didRemoveAdsAtIndexPaths:(NSArray *)indexPaths
