@@ -94,6 +94,12 @@
  */
 - (void)loadAdsForAdUnitID:(NSString *)adUnitID targeting:(MPNativeAdRequestTargeting *)targeting;
 
+- (NSIndexPath *)adjustedIndexPathForOriginalIndexPath:(NSIndexPath *)indexPath;
+
+- (NSIndexPath *)originalIndexPathForAdjustedIndexPath:(NSIndexPath *)indexPath;
+
+- (BOOL)isAdAtIndexPath:(NSIndexPath *)indexPath;
+
 @end
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

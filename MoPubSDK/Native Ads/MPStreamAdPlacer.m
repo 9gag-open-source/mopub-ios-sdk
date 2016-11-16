@@ -100,8 +100,7 @@ static const NSUInteger kIndexPathItemIndex = 1;
 
 - (void)renderAdAtIndexPath:(NSIndexPath *)indexPath inView:(UIView *)view
 {
-    MPNativeAdData *adData = [self.adPlacementData adDataAtAdjustedIndexPath:indexPath];
-
+    MPNativeAdData *adData = [self.adPlacementData adDataAtAdjustedIndexPath:indexPath];    
     if (!adData) {
         MPLogError(@"-renderAdAtIndexPath: An ad does not exist at indexPath");
         return;

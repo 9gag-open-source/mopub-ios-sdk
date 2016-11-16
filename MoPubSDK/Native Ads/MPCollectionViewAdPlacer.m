@@ -89,6 +89,18 @@ static NSString * const kCollectionViewAdPlacerReuseIdentifier = @"MPCollectionV
     [self.streamAdPlacer loadAdsForAdUnitID:adUnitID targeting:targeting];
 }
 
+- (BOOL)isAdAtIndexPath:(NSIndexPath *)indexPath {
+    return [self.streamAdPlacer isAdAtIndexPath:indexPath];
+}
+
+- (NSIndexPath *)adjustedIndexPathForOriginalIndexPath:(NSIndexPath *)indexPath {
+    return [self.streamAdPlacer adjustedIndexPathForOriginalIndexPath:indexPath];
+}
+
+- (NSIndexPath *)originalIndexPathForAdjustedIndexPath:(NSIndexPath *)indexPath {
+    return [self.streamAdPlacer originalIndexPathForAdjustedIndexPath:indexPath];
+}
+
 #pragma mark - Ad Insertion
 
 - (void)updateVisibleCells
