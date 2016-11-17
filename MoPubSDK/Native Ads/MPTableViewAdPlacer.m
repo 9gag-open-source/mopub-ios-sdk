@@ -67,9 +67,24 @@ static NSString * const kTableViewAdPlacerReuseIdentifier = @"MPTableViewAdPlace
     return self;
 }
 
+- (void)activate {
+    if (!self.insertionTimer) {
+        self.insertionTimer = [MPTimer timerWithTimeInterval:kUpdateVisibleCellsInterval target:self selector:@selector(updateVisibleCells) repeats:YES];
+        self.insertionTimer.runLoopMode = NSRunLoopCommonModes;
+        [self.insertionTimer scheduleNow];
+    }
+}
+
+- (void)stop {
+    if (self.insertionTimer) {
+        [_insertionTimer invalidate];
+        _insertionTimer = nil;
+    }
+}
+
 - (void)dealloc
 {
-    [_insertionTimer invalidate];
+    [self stop];
 }
 
 #pragma mark - Public
@@ -81,11 +96,7 @@ static NSString * const kTableViewAdPlacerReuseIdentifier = @"MPTableViewAdPlace
 
 - (void)loadAdsForAdUnitID:(NSString *)adUnitID targeting:(MPNativeAdRequestTargeting *)targeting
 {
-    if (!self.insertionTimer) {
-        self.insertionTimer = [MPTimer timerWithTimeInterval:kUpdateVisibleCellsInterval target:self selector:@selector(updateVisibleCells) repeats:YES];
-        self.insertionTimer.runLoopMode = NSRunLoopCommonModes;
-        [self.insertionTimer scheduleNow];
-    }
+    [self activate];
     [self.streamAdPlacer loadAdsForAdUnitID:adUnitID targeting:targeting];
 }
 

@@ -94,11 +94,31 @@
  */
 - (void)loadAdsForAdUnitID:(NSString *)adUnitID targeting:(MPNativeAdRequestTargeting *)targeting;
 
+/**
+ * Returns original index path (with ad) by passing adjusted index path (without ad)
+ *
+ * @param indexPath adjusted index path
+ */
 - (NSIndexPath *)adjustedIndexPathForOriginalIndexPath:(NSIndexPath *)indexPath;
 
+/**
+ * Returns adjusted index path (without ad) by passing original index path (with ad)
+ *
+ * @param indexPath original index path
+ */
 - (NSIndexPath *)originalIndexPathForAdjustedIndexPath:(NSIndexPath *)indexPath;
 
 - (BOOL)isAdAtIndexPath:(NSIndexPath *)indexPath;
+
+/**
+ * Activate Ad Placer to insert ad
+ */
+- (void)activate;
+
+/**
+ * Stop ad Placer insert Ad
+ */
+- (void)stop;
 
 @end
 

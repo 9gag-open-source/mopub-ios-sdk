@@ -96,6 +96,16 @@
  */
 - (void)loadAdsForAdUnitID:(NSString *)adUnitID targeting:(MPNativeAdRequestTargeting *)targeting;
 
+/**
+ * activate ad placer
+ */
+- (void)activate;
+
+/**
+ *  Stop ad placer to insert ad
+ */
+- (void)stop;
+
 @end
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

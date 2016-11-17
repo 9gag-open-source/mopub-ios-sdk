@@ -55,9 +55,7 @@ static NSString * const kCollectionViewAdPlacerReuseIdentifier = @"MPCollectionV
         _streamAdPlacer = [[MPInstanceProvider sharedProvider] buildStreamAdPlacerWithViewController:controller adPositioning:positioning rendererConfigurations:rendererConfigurations];
         _streamAdPlacer.delegate = self;
 
-        _insertionTimer = [MPTimer timerWithTimeInterval:kUpdateVisibleCellsInterval target:self selector:@selector(updateVisibleCells) repeats:YES];
-        _insertionTimer.runLoopMode = NSRunLoopCommonModes;
-        [_insertionTimer scheduleNow];
+        [self activate];
 
         _originalDataSource = collectionView.dataSource;
         _originalDelegate = collectionView.delegate;
@@ -72,9 +70,24 @@ static NSString * const kCollectionViewAdPlacerReuseIdentifier = @"MPCollectionV
     return self;
 }
 
+- (void)activate {
+    if (!_insertionTimer) {
+        _insertionTimer = [MPTimer timerWithTimeInterval:kUpdateVisibleCellsInterval target:self selector:@selector(updateVisibleCells) repeats:YES];
+        _insertionTimer.runLoopMode = NSRunLoopCommonModes;
+        [_insertionTimer scheduleNow];
+    }
+}
+
+- (void)stop {
+    if (_insertionTimer) {
+        [_insertionTimer invalidate];
+        _insertionTimer = nil;
+    }
+}
+
 - (void)dealloc
 {
-    [_insertionTimer invalidate];
+    [self stop];
 }
 
 #pragma mark - Public
