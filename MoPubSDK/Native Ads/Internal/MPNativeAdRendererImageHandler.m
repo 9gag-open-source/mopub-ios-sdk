@@ -52,10 +52,7 @@
             // can result in poor scrolling performance. To fix this, we force decompression in the background before
             // assignment to a UIImageView.
             
-//            UIGraphicsBeginImageContext(CGSizeMake(1, 1));
-//            [image drawAtPoint:CGPointZero];
-//            UIGraphicsEndImageContext();
-            
+            // Fix memory issue for decompress image
             CGImageRef imageRef = image.CGImage;
             // System only supports RGB, set explicitly and prevent context error
             // if the downloaded image is not the supported format
