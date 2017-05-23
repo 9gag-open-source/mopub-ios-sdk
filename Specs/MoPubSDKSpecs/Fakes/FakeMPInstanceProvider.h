@@ -9,15 +9,12 @@
 #import "FakeMPAdServerCommunicator.h"
 #import "FakeInterstitialAdapter.h"
 #import "FakeMPAnalyticsTracker.h"
-#import <iAd/iAd.h>
 #import <GoogleMobileAds/GoogleMobileAds.h>
 #import "FakeInterstitialCustomEvent.h"
 #import <Chartboost/Chartboost.h>
-#import "FakeGSFullscreenAd.h"
 #import "IMInterstitial.h"
 #import "IMBanner.h"
 #import "MPInterstitialAdManager.h"
-#import "FakeGSBannerAdView.h"
 #import "MPBaseBannerAdapter.h"
 #import "FakeBannerCustomEvent.h"
 #import "FakeMPTimer.h"
@@ -34,11 +31,8 @@
 #import "MPRewardedVideoAdManager.h"
 #import "MPRewardedVideoAdapter.h"
 #import "MPRewardedVideoCustomEvent.h"
+#import "MPWebView.h"
 
-@class MRCalendarManager;
-@class EKEventStore;
-@class EKEventEditViewController;
-@class MRPictureManager;
 @class MRVideoPlayerManager;
 @class MPMoviePlayerViewController;
 @class MRBundleManager;
@@ -65,7 +59,7 @@
 @property (nonatomic, strong) MPRewardedVideoCustomEvent *fakeMPRewardedVideoCustomEvent;
 
 #pragma mark - HTML Ads
-@property (nonatomic, strong) MPAdWebView *fakeMPAdWebView;
+@property (nonatomic, strong) MPWebView *fakeMPWebView;
 @property (nonatomic, strong) MPAdWebViewAgent *fakeMPAdWebViewAgent;
 
 #pragma mark - MRAID
@@ -73,12 +67,6 @@
 @property (nonatomic, strong) MRController *fakeMRController;
 @property (nonatomic, strong) MRBridge *fakeMRBridge;
 @property (nonatomic, strong) MRBundleManager *fakeMRBundleManager;
-@property (nonatomic, strong) UIWebView *fakeUIWebView;
-@property (nonatomic, strong) MRCalendarManager *fakeMRCalendarManager;
-@property (nonatomic, strong) EKEventEditViewController *fakeEKEventEditViewController;
-@property (nonatomic, strong) EKEventStore *fakeEKEventStore;
-@property (nonatomic, strong) MRPictureManager *fakeMRPictureManager;
-@property (nonatomic, strong) MRImageDownloader *fakeImageDownloader;
 @property (nonatomic, strong) MRVideoPlayerManager *fakeMRVideoPlayerManager;
 @property (nonatomic, strong) MPMoviePlayerViewController *fakeMoviePlayerViewController;
 @property (nonatomic, strong) MRNativeCommandHandler *fakeNativeCommandHandler;
@@ -91,11 +79,6 @@
 
 #pragma mark - Third Party Integrations
 
-#pragma mark iAd
-@property (nonatomic, strong) ADBannerView *fakeADBannerView;
-@property (nonatomic, strong) ADBannerView *fakeADBannerViewMediumRectangle;
-@property (nonatomic, strong) ADInterstitialAd *fakeADInterstitialAd;
-
 #pragma mark Facebook
 @property (nonatomic, strong) FBAdView *fakeFBAdView;
 @property (nonatomic, strong) FBInterstitialAd *fakeFBInterstitialAd;
@@ -106,12 +89,12 @@
 @property (nonatomic, strong) GADRequest *fakeGADInterstitialRequest;
 @property (nonatomic, strong) GADInterstitial *fakeGADInterstitial;
 
-#pragma mark Greystripe
-@property (nonatomic, strong) FakeGSBannerAdView *fakeGSBannerAdView;
-@property (nonatomic, strong) FakeGSFullscreenAd *fakeGSFullscreenAd;
-
 #pragma mark InMobi
 @property (nonatomic, strong) IMBanner *fakeIMAdView;
 @property (nonatomic, strong) IMInterstitial *fakeIMAdInterstitial;
+
+#pragma mark Build Fake MPWebViews
+- (MPWebView *)buildMPWebViewWithFrame:(CGRect)frame delegate:(id<MPWebViewDelegate>)delegate;
+- (MPWebView *)buildMPWebViewWithFrame:(CGRect)frame;
 
 @end

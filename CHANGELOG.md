@@ -1,3 +1,87 @@
+## Version 4.14.0 (May 10th, 2017)
+- **Features**
+- For Rewarded ads, the client-side callback will now be invoked when using server-side rewarding.
+- Non-mediated interstitial, rewarded, and native ad placer ads will expire within 4 hours.
+
+- **Bug Fixes**
+- Fix old custom events that use the wrong native renderer.
+- Replace usage of typeof with __typeof__ for C99 and C11 compliance.
+- Fix CFBridgingRetain casting bug.
+- Native ad impression tracker will now fire while scrolling.
+- Fix HTML click tracker to fire when using window.location and window.open.
+
+## Version 4.13.1 (April 6th, 2017)
+- **Bug Fixes**
+- Fixed compile error in the MoPub Base SDK Excluding Native bundle.
+
+## Version 4.13.0 (March 23rd, 2017)
+- **Features**
+- Added support for mediation of Google AdMob rewarded video demand (Google Mobile Ads SDK v7.19.0).
+- Google AdMob native ads mediation is now generally available (Google Mobile Ads SDK v7.19.0).
+- Updated the Tapjoy network mediation adapter to support Tapjoy SDK v11.10.0
+
+- **Bug Fixes**
+- Introduced additional preventative measures to improve creative quality.
+
+## Version 4.12.0 (February 9th, 2017)
+- **Features**
+- Rewarded ad units now support rich media.
+- Allow MoPub static native renderer to render Flurry native ads.
+- Removed size limit for native ad main images.
+
+- **Bug Fixes**
+- Native video selection logic now filters by supported MIME types.
+- Ad placer now supports section count.
+- Fix CFStringRef variable initialization.
+
+## Version 4.11.1 (November 28th, 2016)
+- **App Transport Security Updates**
+	- Checks for "NSAllowsArbitraryLoadsInMedia" were changed to "NSAllowsArbitraryLoadsForMedia", per updated Apple documentation
+	- Resolves issue in which explicitly using NSAllowsArbitraryLoadsForMedia or NSAllowsArbitraryLoadsInWebContent causes HTTP clickthroughs not to resolve on iOS 10.1 or higher
+
+## Version 4.11.0 (November 10th, 2016)
+- **The MoPub SDK now uses WKWebView to display ads when possible. Backwards compatibility for old OS versions is retained using UIWebView.**
+- **Native video start tracker now fires immediately upon successful video playback.**
+- **Bug fixes**
+  - Native ads and native video ads now correctly fire impression trackers while scrolling.
+
+## Version 4.10.1 (October 28th, 2016)
+- **Bug fixes**
+  - Fixed iOS 10 bug that causes SKStoreProductViewController to crash if the app does not list portrait as a supported orientation.
+
+## Version 4.10.0 (October 18th, 2016)
+- **Certified FAN 4.15.1**
+- **Certified Chartboost 6.5.2**
+- **Certified Yahoo 7.6.4**
+- **Certified TapJoy support for 11.8.2**
+- **Certified Millennial support for 6.3.1**
+- **Certified Vungle 4.0.6**
+- **Bug fixes**
+  - Added support for the CocoaPods use_frameworks! directive
+
+## Version 4.9.1 (September 14th, 2016)
+- **iOS 10 compatibility updates**
+	- Fixed an issue related to screen bounds calculation
+- **Removed EventKit, EventKitUI frameworks and a few files related to EventKit and MRAID image downloader**
+	- Please completely remove the MoPub SDK from your project and re-integrate this version to ensure that files are properly removed from your project
+
+## Version 4.9.0 (September 1st, 2016)
+- **Modular SDK - publishers can download the base or base excluding native SDK package**
+- **Removed the full SDK bundle**
+- **iOS 10 compatibility updates**
+	- Rotating frequency capping ID for non-targeted ads under 'Limit Ad Tracking' setting
+	- Removed save picture and save to calendar MRAID functionality
+- **Removed iAd and InMobi adapters**
+- **Added Cocoapods module name: "MoPub"**
+- **Bug fixes**
+  - Fixed an issue when multiple rewarded videos are loaded at the same time
+
+## Version 4.8.0 (August 1st, 2016)
+- **renamed MPError enums to avoid possible naming conflict with MediaPlayer framework errors**.
+
+## Version 4.7.0 (June 2nd, 2016)
+- **Rewarded video server-side currency rewarding (Beta)**.
+	
 ## Version 4.6.0 (April 21th, 2016)
 - **Certified Chartboost version 6.4.0**
 - **Certified Tapjoy version 11.5.1**

@@ -13,6 +13,10 @@
 #import "NSJSONSerialization+MPAdditions.h"
 #import "MPRewardedVideoReward.h"
 
+#if MP_HAS_NATIVE_PACKAGE
+#import "MPVASTTrackingEvent.h"
+#endif
+
 NSString * const kAdTypeHeaderKey = @"X-Adtype";
 NSString * const kAdUnitWarmingUpHeaderKey = @"X-Warmup";
 NSString * const kClickthroughHeaderKey = @"X-Clickthrough";
@@ -43,6 +47,7 @@ NSString * const kNativeVideoPauseVisiblePercentHeaderKey = @"X-Pause-Visible-Pe
 NSString * const kNativeVideoImpressionMinVisiblePercentHeaderKey = @"X-Impression-Min-Visible-Percent";
 NSString * const kNativeVideoImpressionVisibleMsHeaderKey = @"X-Impression-Visible-Ms";
 NSString * const kNativeVideoMaxBufferingTimeMsHeaderKey = @"X-Max-Buffer-Ms";
+NSString * const kNativeVideoTrackersHeaderKey = @"X-Video-Trackers";
 
 NSString * const kAdTypeHtml = @"html";
 NSString * const kAdTypeInterstitial = @"interstitial";
@@ -54,6 +59,20 @@ NSString * const kAdTypeNativeVideo = @"json_video";
 // rewarded video
 NSString * const kRewardedVideoCurrencyNameHeaderKey = @"X-Rewarded-Video-Currency-Name";
 NSString * const kRewardedVideoCurrencyAmountHeaderKey = @"X-Rewarded-Video-Currency-Amount";
+NSString * const kRewardedVideoCompletionUrlHeaderKey = @"X-Rewarded-Video-Completion-Url";
+NSString * const kRewardedCurrenciesHeaderKey = @"X-Rewarded-Currencies";
+
+// rewarded playables
+NSString * const kRewardedPlayableDurationHeaderKey = @"X-Rewarded-Duration";
+NSString * const kRewardedPlayableRewardOnClickHeaderKey = @"X-Should-Reward-On-Click";
+
+// native video
+NSString * const kNativeVideoTrackerUrlMacro = @"%%VIDEO_EVENT%%";
+NSString * const kNativeVideoTrackerEventsHeaderKey = @"events";
+NSString * const kNativeVideoTrackerUrlsHeaderKey = @"urls";
+NSString * const kNativeVideoTrackerEventDictionaryKey = @"event";
+NSString * const kNativeVideoTrackerTextDictionaryKey = @"text";
+
 
 NSString * const kAdConfigGender = @"adMetaGender";
 NSString * const kAdConfigBirthdate = @"adMetaBirthdate";
@@ -62,6 +81,7 @@ NSString * const kAdConfigContentUrl = @"adContentUrl";
 @interface MPAdConfiguration ()
 
 @property (nonatomic, copy) NSString *adResponseHTMLString;
+@property (nonatomic, strong, readwrite) NSArray *availableRewards;
 
 - (MPAdType)adTypeFromHeaders:(NSDictionary *)headers;
 - (NSString *)networkTypeFromHeaders:(NSDictionary *)headers;
@@ -105,7 +125,7 @@ NSString * const kAdConfigContentUrl = @"adContentUrl";
         self.shouldInterceptLinks = shouldInterceptLinks ? [shouldInterceptLinks boolValue] : YES;
         self.scrollable = [[headers objectForKey:kScrollableHeaderKey] boolValue];
         self.refreshInterval = [self refreshIntervalFromHeaders:headers];
-        self.adTimeoutInterval = [self adTimeoutIntervalFromHeaders:headers];
+        self.adTimeoutInterval = [self timeIntervalFromHeaders:headers forKey:kAdTimeoutHeaderKey];
 
 
         self.nativeSDKParameters = [self dictionaryFromHeaders:headers
@@ -139,18 +159,50 @@ NSString * const kAdConfigContentUrl = @"adContentUrl";
         self.nativeVideoImpressionVisible = [self timeIntervalFromMsHeaders:headers forKey:kNativeVideoImpressionVisibleMsHeaderKey];
 
         self.nativeVideoMaxBufferingTime = [self timeIntervalFromMsHeaders:headers forKey:kNativeVideoMaxBufferingTimeMsHeaderKey];
+#if MP_HAS_NATIVE_PACKAGE
+        self.nativeVideoTrackers = [self nativeVideoTrackersFromHeaders:headers key:kNativeVideoTrackersHeaderKey];
+#endif
+
 
         // rewarded video
-        NSString *currencyName = [headers objectForKey:kRewardedVideoCurrencyNameHeaderKey];
-        NSNumber *currencyAmount = [self adAmountFromHeaders:headers key:kRewardedVideoCurrencyAmountHeaderKey];
-        if (!currencyName) {
-            currencyName = kMPRewardedVideoRewardCurrencyTypeUnspecified;
+
+        // Attempt to parse the multiple currency header first since this will take
+        // precedence over the older single currency approach.
+        self.availableRewards = [self parseAvailableRewardsFromHeaders:headers];
+        if (self.availableRewards != nil) {
+            // Multiple currencies exist. We will select the first entry in the list
+            // as the default selected reward.
+            if (self.availableRewards.count > 0) {
+                self.selectedReward = self.availableRewards[0];
+            }
+            // In the event that the list of available currencies is empty, we will
+            // follow the behavior from the single currency approach and create an unspecified reward.
+            else {
+                MPRewardedVideoReward * defaultReward = [[MPRewardedVideoReward alloc] initWithCurrencyType:kMPRewardedVideoRewardCurrencyTypeUnspecified amount:@(kMPRewardedVideoRewardCurrencyAmountUnspecified)];
+                self.availableRewards = [NSArray arrayWithObject:defaultReward];
+                self.selectedReward = defaultReward;
+            }
         }
-        if (currencyAmount.integerValue > 0 ) {
-            self.rewardedVideoReward = [[MPRewardedVideoReward alloc] initWithCurrencyType:currencyName amount:currencyAmount];
-        } else {
-            self.rewardedVideoReward = [[MPRewardedVideoReward alloc] initWithCurrencyType:currencyName amount:@(kMPRewardedVideoRewardCurrencyAmountUnspecified)];
+        // Multiple currencies are not available; attempt to process single currency
+        // headers.
+        else {
+            NSString *currencyName = [headers objectForKey:kRewardedVideoCurrencyNameHeaderKey] ?: kMPRewardedVideoRewardCurrencyTypeUnspecified;
+
+            NSNumber *currencyAmount = [self adAmountFromHeaders:headers key:kRewardedVideoCurrencyAmountHeaderKey];
+            if (currencyAmount.integerValue <= 0) {
+                currencyAmount = @(kMPRewardedVideoRewardCurrencyAmountUnspecified);
+            }
+
+            MPRewardedVideoReward * reward = [[MPRewardedVideoReward alloc] initWithCurrencyType:currencyName amount:currencyAmount];
+            self.availableRewards = [NSArray arrayWithObject:reward];
+            self.selectedReward = reward;
         }
+
+        self.rewardedVideoCompletionUrl = [headers objectForKey:kRewardedVideoCompletionUrlHeaderKey];
+
+        // rewarded playables
+        self.rewardedPlayableDuration = [self timeIntervalFromHeaders:headers forKey:kRewardedPlayableDurationHeaderKey];
+        self.rewardedPlayableShouldRewardOnClick = [[headers objectForKey:kRewardedPlayableRewardOnClickHeaderKey] boolValue];
     }
     return self;
 }
@@ -161,7 +213,6 @@ NSString * const kAdConfigContentUrl = @"adContentUrl";
 
     NSMutableDictionary *convertedCustomEvents = [NSMutableDictionary dictionary];
     if (self.adType == MPAdTypeBanner) {
-        [convertedCustomEvents setObject:@"MPiAdBannerCustomEvent" forKey:@"iAd"];
         [convertedCustomEvents setObject:@"MPGoogleAdMobBannerCustomEvent" forKey:@"admob_native"];
         [convertedCustomEvents setObject:@"MPMillennialBannerCustomEvent" forKey:@"millennial_native"];
         [convertedCustomEvents setObject:@"MPHTMLBannerCustomEvent" forKey:@"html"];
@@ -169,12 +220,12 @@ NSString * const kAdConfigContentUrl = @"adContentUrl";
         [convertedCustomEvents setObject:@"MOPUBNativeVideoCustomEvent" forKey:@"json_video"];
         [convertedCustomEvents setObject:@"MPMoPubNativeCustomEvent" forKey:@"json"];
     } else if (self.adType == MPAdTypeInterstitial) {
-        [convertedCustomEvents setObject:@"MPiAdInterstitialCustomEvent" forKey:@"iAd_full"];
         [convertedCustomEvents setObject:@"MPGoogleAdMobInterstitialCustomEvent" forKey:@"admob_full"];
         [convertedCustomEvents setObject:@"MPMillennialInterstitialCustomEvent" forKey:@"millennial_full"];
         [convertedCustomEvents setObject:@"MPHTMLInterstitialCustomEvent" forKey:@"html"];
         [convertedCustomEvents setObject:@"MPMRAIDInterstitialCustomEvent" forKey:@"mraid"];
         [convertedCustomEvents setObject:@"MPMoPubRewardedVideoCustomEvent" forKey:@"rewarded_video"];
+        [convertedCustomEvents setObject:@"MPMoPubRewardedPlayableCustomEvent" forKey:@"rewarded_playable"];
     }
     if ([convertedCustomEvents objectForKey:self.networkType]) {
         customEventClassName = [convertedCustomEvents objectForKey:self.networkType];
@@ -227,7 +278,7 @@ NSString * const kAdConfigContentUrl = @"adContentUrl";
 {
     NSString *adTypeString = [headers objectForKey:kAdTypeHeaderKey];
 
-    if ([adTypeString isEqualToString:@"interstitial"] || [adTypeString isEqualToString:@"rewarded_video"]) {
+    if ([adTypeString isEqualToString:@"interstitial"] || [adTypeString isEqualToString:@"rewarded_video"] || [adTypeString isEqualToString:@"rewarded_playable"]) {
         return MPAdTypeInterstitial;
     } else if (adTypeString &&
                [headers objectForKey:kOrientationTypeHeaderKey]) {
@@ -278,6 +329,21 @@ NSString * const kAdConfigContentUrl = @"adContentUrl";
     return interval;
 }
 
+- (NSTimeInterval)timeIntervalFromHeaders:(NSDictionary *)headers forKey:(NSString *)key
+{
+    NSString *intervalString = [headers objectForKey:key];
+    NSTimeInterval interval = -1;
+    if (intervalString) {
+        int parsedInt = -1;
+        BOOL isNumber = [[NSScanner scannerWithString:intervalString] scanInt:&parsedInt];
+        if (isNumber && parsedInt >= 0) {
+            interval = parsedInt;
+        }
+    }
+
+    return interval;
+}
+
 - (NSTimeInterval)timeIntervalFromMsHeaders:(NSDictionary *)headers forKey:(NSString *)key
 {
     NSString *msString = [headers objectForKey:key];
@@ -308,21 +374,6 @@ NSString * const kAdConfigContentUrl = @"adContentUrl";
     return percent;
 }
 
-- (NSTimeInterval)adTimeoutIntervalFromHeaders:(NSDictionary *)headers
-{
-    NSString *intervalString = [headers objectForKey:kAdTimeoutHeaderKey];
-    NSTimeInterval interval = -1;
-    if (intervalString) {
-        int parsedInt = -1;
-        BOOL isNumber = [[NSScanner scannerWithString:intervalString] scanInt:&parsedInt];
-        if (isNumber && parsedInt >= 0) {
-            interval = parsedInt;
-        }
-    }
-
-    return interval;
-}
-
 - (NSNumber *)adAmountFromHeaders:(NSDictionary *)headers key:(NSString *)key
 {
     NSString *amountString = [headers objectForKey:key];
@@ -348,6 +399,75 @@ NSString * const kAdConfigContentUrl = @"adContentUrl";
     } else {
         return MPInterstitialOrientationTypeAll;
     }
+}
+
+#if MP_HAS_NATIVE_PACKAGE
+- (NSDictionary *)nativeVideoTrackersFromHeaders:(NSDictionary *)headers key:(NSString *)key
+{
+    NSDictionary *dictFromHeader = [self dictionaryFromHeaders:headers forKey:key];
+    if (!dictFromHeader) {
+        return nil;
+    }
+    NSMutableDictionary *videoTrackerDict = [NSMutableDictionary new];
+    NSArray *events = dictFromHeader[kNativeVideoTrackerEventsHeaderKey];
+    NSArray *urls = dictFromHeader[kNativeVideoTrackerUrlsHeaderKey];
+    NSSet *supportedEvents = [NSSet setWithObjects:MPVASTTrackingEventTypeStart, MPVASTTrackingEventTypeFirstQuartile, MPVASTTrackingEventTypeMidpoint,  MPVASTTrackingEventTypeThirdQuartile, MPVASTTrackingEventTypeComplete, nil];
+    for (NSString *event in events) {
+        if (![supportedEvents containsObject:event]) {
+            continue;
+        }
+        [self setVideoTrackers:videoTrackerDict event:event urls:urls];
+    }
+    if (videoTrackerDict.count == 0) {
+        return nil;
+    }
+    return videoTrackerDict;
+}
+
+- (void)setVideoTrackers:(NSMutableDictionary *)videoTrackerDict event:(NSString *)event urls:(NSArray *)urls {
+    NSMutableArray *trackers = [NSMutableArray new];
+    for (NSString *url in urls) {
+        if ([url rangeOfString:kNativeVideoTrackerUrlMacro].location != NSNotFound) {
+            NSString *trackerUrl = [url stringByReplacingOccurrencesOfString:kNativeVideoTrackerUrlMacro withString:event];
+            NSDictionary *dict = @{kNativeVideoTrackerEventDictionaryKey:event, kNativeVideoTrackerTextDictionaryKey:trackerUrl};
+            MPVASTTrackingEvent *tracker = [[MPVASTTrackingEvent alloc] initWithDictionary:dict];
+            [trackers addObject:tracker];
+        }
+    }
+    if (trackers.count > 0) {
+        videoTrackerDict[event] = trackers;
+    }
+}
+
+#endif
+
+- (NSArray *)parseAvailableRewardsFromHeaders:(NSDictionary *)headers {
+    // The X-Rewarded-Currencies header key doesn't exist. This is probably
+    // not a rewarded ad.
+    NSDictionary * currencies = [self dictionaryFromHeaders:headers forKey:kRewardedCurrenciesHeaderKey];
+    if (currencies == nil) {
+        return nil;
+    }
+
+    // Either the list of available rewards doesn't exist or is empty.
+    // This is an error.
+    NSArray * rewards = [currencies objectForKey:@"rewards"];
+    if (rewards.count == 0) {
+        MPLogError(@"No available rewards found.");
+        return nil;
+    }
+
+    // Parse the list of JSON rewards into objects.
+    NSMutableArray * availableRewards = [NSMutableArray arrayWithCapacity:rewards.count];
+    [rewards enumerateObjectsUsingBlock:^(NSDictionary * rewardDict, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSString * name = rewardDict[@"name"] ?: kMPRewardedVideoRewardCurrencyTypeUnspecified;
+        NSNumber * amount = rewardDict[@"amount"] ?: @(kMPRewardedVideoRewardCurrencyAmountUnspecified);
+
+        MPRewardedVideoReward * reward = [[MPRewardedVideoReward alloc] initWithCurrencyType:name amount:amount];
+        [availableRewards addObject:reward];
+    }];
+
+    return availableRewards;
 }
 
 @end

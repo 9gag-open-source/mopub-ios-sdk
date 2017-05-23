@@ -16,6 +16,13 @@
 #import "MPLogging.h"
 #import "MPTimer.h"
 #import "MPRewardedVideoReward.h"
+#import "MPRewardedVideo+Internal.h"
+#import "MPConstants.h"
+#import "MPMoPubRewardedVideoCustomEvent.h"
+#import "MPMoPubRewardedPlayableCustomEvent.h"
+#import "MPRealTimeTimer.h"
+
+static const NSString *kRewardedVideoApiVersion = @"1";
 
 @interface MPRewardedVideoAdapter () <MPRewardedVideoCustomEventDelegate>
 
@@ -28,6 +35,7 @@
 @property (nonatomic, assign) BOOL hasSuccessfullyLoaded;
 // Since we only notify the application of one success per load, we also only notify the application of one expiration per success.
 @property (nonatomic, assign) BOOL hasExpired;
+@property (nonatomic, strong) MPRealTimeTimer *expirationTimer;
 
 @end
 
@@ -115,11 +123,30 @@
     [self.timeoutTimer invalidate];
 }
 
+- (NSURL *)rewardedVideoCompletionUrlByAppendingClientParams
+{
+    NSString *finalCompletionUrlString = self.configuration.rewardedVideoCompletionUrl;
+    if ([self.delegate respondsToSelector:@selector(rewardedVideoCustomerId)] && [self.delegate rewardedVideoCustomerId].length > 0) {
+        // self.configuration.rewardedVideoCompletionUrl is already url encoded. Only the customer_id added by the client needs url encoding.
+        NSString *urlEncodedCustomerId = [[self.delegate rewardedVideoCustomerId] mp_URLEncodedString];
+        finalCompletionUrlString = [NSString stringWithFormat:@"%@&customer_id=%@", finalCompletionUrlString, urlEncodedCustomerId];
+    }
+    finalCompletionUrlString = [NSString stringWithFormat:@"%@&nv=%@&v=%@", finalCompletionUrlString, [MP_SDK_VERSION mp_URLEncodedString], kRewardedVideoApiVersion];
+
+    if (self.configuration.selectedReward && ![self.configuration.selectedReward.currencyType isEqualToString:kMPRewardedVideoRewardCurrencyTypeUnspecified]) {
+        finalCompletionUrlString = [NSString stringWithFormat:@"%@&rcn=%@&rca=%i", finalCompletionUrlString, [self.configuration.selectedReward.currencyType mp_URLEncodedString], [self.configuration.selectedReward.amount intValue]];
+    }
+
+    return [NSURL URLWithString:finalCompletionUrlString];
+}
+
 #pragma mark - Metrics
 
 - (void)trackImpression
 {
     [[[MPCoreInstanceProvider sharedProvider] sharedMPAnalyticsTracker] trackImpressionForConfiguration:self.configuration];
+    self.hasTrackedImpression = YES;
+    [self.expirationTimer invalidate];
 }
 
 - (void)trackClick
@@ -145,6 +172,21 @@
     self.hasSuccessfullyLoaded = YES;
     [self didStopLoading];
     [self.delegate rewardedVideoDidLoadForAdapter:self];
+
+    // Check for MoPub-specific custom events before setting the timer
+    if ([customEvent isKindOfClass:[MPMoPubRewardedVideoCustomEvent class]]
+        || [customEvent isKindOfClass:[MPMoPubRewardedPlayableCustomEvent class]]) {
+        // Set up timer for expiration
+        __weak __typeof__(self) weakSelf = self;
+        self.expirationTimer = [[MPRealTimeTimer alloc] initWithInterval:[MPConstants adsExpirationInterval] block:^(MPRealTimeTimer *timer){
+            __strong __typeof__(weakSelf) strongSelf = weakSelf;
+            if (strongSelf && !strongSelf.hasTrackedImpression) {
+                [strongSelf rewardedVideoDidExpireForCustomEvent:strongSelf.rewardedVideoCustomEvent];
+            }
+            [strongSelf.expirationTimer invalidate];
+        }];
+        [self.expirationTimer scheduleNow];
+    }
 }
 
 - (void)rewardedVideoDidFailToLoadAdForCustomEvent:(MPRewardedVideoCustomEvent *)customEvent error:(NSError *)error
@@ -183,7 +225,6 @@
 - (void)rewardedVideoDidAppearForCustomEvent:(MPRewardedVideoCustomEvent *)customEvent
 {
     if ([self.rewardedVideoCustomEvent enableAutomaticImpressionAndClickTracking] && !self.hasTrackedImpression) {
-        self.hasTrackedImpression = YES;
         [self trackImpression];
     }
 
@@ -218,7 +259,13 @@
 - (void)rewardedVideoShouldRewardUserForCustomEvent:(MPRewardedVideoCustomEvent *)customEvent reward:(MPRewardedVideoReward *)reward
 {
     if (self.configuration) {
-        MPRewardedVideoReward *mopubConfiguredReward = self.configuration.rewardedVideoReward;
+        // Send server to server callback if available
+        if (self.configuration.rewardedVideoCompletionUrl) {
+            [[MPRewardedVideo sharedInstance] startRewardedVideoConnectionWithUrl:[self rewardedVideoCompletionUrlByAppendingClientParams]];
+        }
+
+        MPRewardedVideoReward *mopubConfiguredReward = self.configuration.selectedReward;
+
         // If reward is set in adConfig, use reward that's set in adConfig.
         // Currency type has to be defined in mopubConfiguredReward in order to use mopubConfiguredReward.
         if (mopubConfiguredReward && mopubConfiguredReward.currencyType != kMPRewardedVideoRewardCurrencyTypeUnspecified) {
@@ -226,9 +273,19 @@
         }
     }
 
+    // Notify client with the reward if present.
     if (reward) {
         [self.delegate rewardedVideoShouldRewardUserForAdapter:self reward:reward];
     }
+}
+
+- (NSString *)customerIdForRewardedVideoCustomEvent:(MPRewardedVideoCustomEvent *)customEvent
+{
+    if ([self.delegate respondsToSelector:@selector(rewardedVideoCustomerId)]) {
+        return [self.delegate rewardedVideoCustomerId];
+    }
+
+    return nil;
 }
 
 #pragma mark - MPPrivateRewardedVideoCustomEventDelegate

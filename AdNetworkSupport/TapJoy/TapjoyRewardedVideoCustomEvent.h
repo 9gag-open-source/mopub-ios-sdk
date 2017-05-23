@@ -6,9 +6,9 @@
 #endif
 
 /*
- * Certified with version 11.5.1 of the Tapjoy SDK.
+ * Please reference the Supported Mediation Partner page at http://bit.ly/2mqsuFH for the
+ * latest version and ad format certifications.
  */
-
 @interface TapjoyRewardedVideoCustomEvent : MPRewardedVideoCustomEvent
 
 @end

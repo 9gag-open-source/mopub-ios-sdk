@@ -1,12 +1,10 @@
 #import "MPAdConfiguration.h"
-#import "MPiAdBannerCustomEvent.h"
 #import "MPGoogleAdMobBannerCustomEvent.h"
 #import "MPMillennialBannerCustomEvent.h"
 #import "MPHTMLBannerCustomEvent.h"
 #import "MPMRAIDBannerCustomEvent.h"
 #import "MPGoogleAdMobInterstitialCustomEvent.h"
 #import "MPMillennialInterstitialCustomEvent.h"
-#import "MPiAdInterstitialCustomEvent.h"
 #import "MPHTMLInterstitialCustomEvent.h"
 #import "MPMRAIDInterstitialCustomEvent.h"
 #import <Cedar/Cedar.h>
@@ -270,6 +268,12 @@ describe(@"MPAdConfiguration", ^{
 
     });
 
+    it(@"should have completion url for rewarded video server to server", ^{
+        headers = @{kRewardedVideoCompletionUrlHeaderKey: @"http://ads.mopub.com/m/rewarded_video_completion?req=332dbe5798d644309d9d950321d37e3c&reqt=1460590468.0&id=54c94899972a4d4fb00c9cbf0fd08141&cid=303d4529ee3b42e7ac1f5c19caf73515&udid=ifa%3A3E67D059-6F94-4C88-AD2A-72539FE13795&cppck=09CCC"};
+        configuration = [[MPAdConfiguration alloc] initWithHeaders:headers data:nil];
+        configuration.rewardedVideoCompletionUrl should_not be_nil;
+    });
+
     it(@"should process the nativeSDKParameters", ^{
         headers = @{kNativeSDKParametersHeaderKey: @"{\"foo\":\"bar\", \"baz\":2, \"nah\":null}"};
         configuration = [[MPAdConfiguration alloc] initWithHeaders:headers data:nil];
@@ -319,10 +323,6 @@ describe(@"MPAdConfiguration", ^{
     });
 
     it(@"should convert network/ad type to custom event class", ^{
-        headers = @{kAdTypeHeaderKey: @"iAd"};
-        configuration = [[MPAdConfiguration alloc] initWithHeaders:headers data:nil];
-        configuration.customEventClass should equal([MPiAdBannerCustomEvent class]);
-
         headers = @{kAdTypeHeaderKey: @"admob_native"};
         configuration = [[MPAdConfiguration alloc] initWithHeaders:headers data:nil];
         configuration.customEventClass should equal([MPGoogleAdMobBannerCustomEvent class]);
@@ -346,10 +346,6 @@ describe(@"MPAdConfiguration", ^{
         headers = @{kAdTypeHeaderKey: @"interstitial", kInterstitialAdTypeHeaderKey: @"millennial_full"};
         configuration = [[MPAdConfiguration alloc] initWithHeaders:headers data:nil];
         configuration.customEventClass should equal([MPMillennialInterstitialCustomEvent class]);
-
-        headers = @{kAdTypeHeaderKey: @"interstitial", kInterstitialAdTypeHeaderKey: @"iAd_full"};
-        configuration = [[MPAdConfiguration alloc] initWithHeaders:headers data:nil];
-        configuration.customEventClass should equal([MPiAdInterstitialCustomEvent class]);
 
         headers = @{kAdTypeHeaderKey: @"html", kOrientationTypeHeaderKey: @"l"};
         configuration = [[MPAdConfiguration alloc] initWithHeaders:headers data:nil];

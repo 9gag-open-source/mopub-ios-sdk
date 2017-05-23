@@ -88,9 +88,9 @@ static NSString * const kDisplayAgentErrorDomain = @"com.mopub.displayagent";
     [self.resolver cancel];
     [self.enhancedDeeplinkFallbackResolver cancel];
 
-    __weak typeof(self) weakSelf = self;
+    __weak __typeof__(self) weakSelf = self;
     self.resolver = [[MPCoreInstanceProvider sharedProvider] buildMPURLResolverWithURL:URL completion:^(MPURLActionInfo *suggestedAction, NSError *error) {
-        typeof(self) strongSelf = weakSelf;
+        __typeof__(self) strongSelf = weakSelf;
         if (strongSelf) {
             if (error) {
                 [strongSelf failedToResolveURLWithError:error];
@@ -147,6 +147,9 @@ static NSString * const kDisplayAgentErrorDomain = @"com.mopub.displayagent";
             [self showWebViewWithHTMLString:actionInfo.HTTPResponseString
                                     baseURL:actionInfo.webViewBaseURL];
             break;
+        case MPURLActionTypeOpenURLInWebView:
+            [self showWebViewWithURL:actionInfo.originalURL];
+            break;
         case MPURLActionTypeShare:
             [self openShareURL:actionInfo.shareURL];
             break;
@@ -176,10 +179,10 @@ static NSString * const kDisplayAgentErrorDomain = @"com.mopub.displayagent";
 
 - (void)handleEnhancedDeeplinkFallbackForRequest:(MPEnhancedDeeplinkRequest *)request;
 {
-    __weak typeof(self) weakSelf = self;
+    __weak __typeof__(self) weakSelf = self;
     [self.enhancedDeeplinkFallbackResolver cancel];
     self.enhancedDeeplinkFallbackResolver = [[MPCoreInstanceProvider sharedProvider] buildMPURLResolverWithURL:request.fallbackURL completion:^(MPURLActionInfo *actionInfo, NSError *error) {
-        typeof(self) strongSelf = weakSelf;
+        __typeof__(self) strongSelf = weakSelf;
         if (strongSelf) {
             if (error) {
                 // If the resolver fails, just treat the entire original URL as a regular deeplink.
@@ -199,13 +202,25 @@ static NSString * const kDisplayAgentErrorDomain = @"com.mopub.displayagent";
 
 - (void)showWebViewWithHTMLString:(NSString *)HTMLString baseURL:(NSURL *)URL
 {
+    self.browserController = [[MPAdBrowserController alloc] initWithURL:URL
+                                                             HTMLString:HTMLString
+                                                               delegate:self];
+    [self showAdBrowserController:self.browserController];
+}
+
+- (void)showWebViewWithURL:(NSURL *)URL {
+    self.browserController = [[MPAdBrowserController alloc] initWithURL:URL
+                                                               delegate:self];
+    [self showAdBrowserController:self.browserController];
+}
+
+- (void)showAdBrowserController:(MPAdBrowserController *)adBrowserController {
     [self hideOverlay];
 
-    self.browserController = [[MPAdBrowserController alloc] initWithURL:URL
-                                                              HTMLString:HTMLString
-                                                                delegate:self];
     self.browserController.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
-    [[self.delegate viewControllerForPresentingModalView] presentViewController:self.browserController animated:MP_ANIMATED completion:nil];
+    [[self.delegate viewControllerForPresentingModalView] presentViewController:self.browserController
+                                                                       animated:MP_ANIMATED
+                                                                     completion:nil];
 }
 
 - (void)showStoreKitProductWithParameter:(NSString *)parameter fallbackURL:(NSURL *)URL

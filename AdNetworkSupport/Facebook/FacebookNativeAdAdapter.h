@@ -13,10 +13,6 @@
 
 @class FBNativeAd;
 
-/**
- * Certified with the Facebook iOS SDK version 4.8.0
- */
-
 extern NSString *const kFBVideoAdsEnabledKey;
 
 @interface FacebookNativeAdAdapter : NSObject <MPNativeAdAdapter>
