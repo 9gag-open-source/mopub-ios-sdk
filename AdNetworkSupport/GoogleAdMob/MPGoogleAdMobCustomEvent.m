@@ -71,7 +71,8 @@
 - (void)adLoader:(GADAdLoader *)adLoader didReceiveNativeAppInstallAd:(GADNativeAppInstallAd *)nativeAppInstallAd {
     MPLogDebug(@"MOPUB: Did receive app install ad");
     
-    MPGoogleAdMobNativeAdAdapter *adapter = [[MPGoogleAdMobNativeAdAdapter alloc] initWithGADNativeAd:nativeAppInstallAd];
+    MPGoogleAdMobNativeAdAdapter *adapter = [[MPGoogleAdMobNativeAdAdapter alloc] initWithAdMobNativeAppInstallAd:nativeAppInstallAd];
+    
     MPNativeAd *interfaceAd = [[MPNativeAd alloc] initWithAdAdapter:adapter];
     
     NSMutableArray *imageArray = [NSMutableArray array];
@@ -95,7 +96,7 @@
 {
     MPLogDebug(@"MOPUB: Did receive nativeAd");
 
-    MPGoogleAdMobNativeAdAdapter *adapter = [[MPGoogleAdMobNativeAdAdapter alloc] initWithGADNativeAd:nativeContentAd];
+    MPGoogleAdMobNativeAdAdapter *adapter = [[MPGoogleAdMobNativeAdAdapter alloc] initWithAdMobNativeContentAd:nativeContentAd];    
     MPNativeAd *interfaceAd = [[MPNativeAd alloc] initWithAdAdapter:adapter];
     
     NSMutableArray *imageArray = [NSMutableArray array];
