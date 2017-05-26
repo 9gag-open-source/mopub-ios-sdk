@@ -6,6 +6,8 @@
 
 #import <GoogleMobileAds/GoogleMobileAds.h>
 
+static NSString *const kGADMNativeAd = @"nativeAd";
+
 /// This class implements the `MPNativeAdAdapter` and `GADNativeAdDelegate` protocols, that allow
 /// the MoPub SDK to interact with native ad objects obtained from Google Mobile Ads SDK.
 @interface MPGoogleAdMobNativeAdAdapter : NSObject<MPNativeAdAdapter, GADNativeAdDelegate>

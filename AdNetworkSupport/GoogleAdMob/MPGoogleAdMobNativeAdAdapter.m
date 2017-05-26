@@ -9,6 +9,7 @@ static NSString *const kGADMAdvertiserKey = @"advertiser";
 static NSString *const kGADMPriceKey = @"price";
 static NSString *const kGADMStoreKey = @"store";
 
+
 @implementation MPGoogleAdMobNativeAdAdapter
 
 @synthesize properties = _properties;
@@ -48,7 +49,8 @@ static NSString *const kGADMStoreKey = @"store";
     if (adMobNativeContentAd.advertiser) {
       properties[kGADMAdvertiserKey] = adMobNativeContentAd.advertiser;
     }
-
+        
+    properties[kGADMNativeAd] = self.adMobNativeContentAd;
     _properties = properties;
   }
 
@@ -97,7 +99,7 @@ static NSString *const kGADMStoreKey = @"store";
     if (adMobNativeAppInstallAd.store) {
       properties[kGADMStoreKey] = adMobNativeAppInstallAd.store;
     }
-
+    properties[kGADMNativeAd] = self.adMobNativeAppInstallAd;
     _properties = properties;
   }
 

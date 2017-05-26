@@ -1,47 +1,69 @@
-//
-//  MPGoogleAdMobCustomEvent.m
-//  9GAG
-//
-//  Created by Jacky Wang on 6/5/2016.
-//  Copyright © 2016 9GAG. All rights reserved.
-//
-
-#import "MPGoogleAdMobCustomEvent.h"
-#import <GoogleMobileAds/GoogleMobileAds.h>
-#import "MPLogging.h"
-#import "MoPub.h"
-#import "MPNativeAd.h"
 #import "MPGoogleAdMobNativeAdAdapter.h"
-#include "TargetConditionals.h"
+#import "MPGoogleAdMobCustomEvent.h"
+#import "MPInstanceProvider.h"
+#import "MPLogging.h"
+#import "MPNativeAd.h"
+#import "MPNativeAdConstants.h"
+#import "MPNativeAdError.h"
+#import "MPNativeAdUtils.h"
 #import "MPAdConfiguration.h"
 
-@interface MPGoogleAdMobCustomEvent()
-@property(nonatomic, strong)GADAdLoader *loader;
+static void MPGoogleLogInfo(NSString *message) {
+    message = [[NSString alloc] initWithFormat:@"<Google Adapter> - %@", message];
+    MPLogInfo(message);
+}
+
+/// Holds the preferred location of the AdChoices icon.
+static GADAdChoicesPosition adChoicesPosition;
+
+@interface MPGoogleAdMobCustomEvent () <GADAdLoaderDelegate, GADNativeAppInstallAdLoaderDelegate, GADNativeContentAdLoaderDelegate>
+
+/// GADAdLoader instance.
+@property(nonatomic, strong) GADAdLoader *adLoader;
+
 @end
 
 @implementation MPGoogleAdMobCustomEvent
 
-- (void)requestAdWithCustomEventInfo:(NSDictionary *)info
-{
-    MPLogInfo(@"MOPUB: requesting AdMob Native Ad");
-    
-    NSString *adUnitID = [info objectForKey:@"adUnitID"];
-    
++ (void)setAdChoicesPosition:(GADAdChoicesPosition)position {
+    // Since this adapter only supports one position for all instances of native ads, publishers might
+    // access this class method in multiple threads and try to set the position for various native
+    // ads, so its better to use synchronized block to make "adChoicesPosition" variable thread safe.
+    @synchronized([self class]) {
+        adChoicesPosition = position;
+    }
+}
+
+- (void)requestAdWithCustomEventInfo:(NSDictionary *)info {
+    NSString *applicationID = [info objectForKey:@"appid"];
+    if (applicationID) {
+        static dispatch_once_t onceToken;
+        dispatch_once(&onceToken, ^{
+            [GADMobileAds configureWithApplicationID:applicationID];
+        });
+    }
+    NSString *adUnitID = info[@"adUnitID"];
     if (!adUnitID) {
-        [self.delegate nativeCustomEvent:self didFailToLoadAdWithError:MPNativeAdNSErrorForInvalidAdServerResponse(@"MOPUB: No AdUnitID from GoogleAdMob")];
+        [self.delegate nativeCustomEvent:self
+                didFailToLoadAdWithError:MPNativeAdNSErrorForInvalidAdServerResponse(
+                                                                                     @"Ad unit ID cannot be nil.")];
         return;
     }
     
-    self.loader = [[GADAdLoader alloc] initWithAdUnitID:adUnitID rootViewController:nil adTypes:@[kGADAdLoaderAdTypeNativeContent,kGADAdLoaderAdTypeNativeAppInstall] options:nil];
-    self.loader.delegate = self;
+    UIWindow *window = [UIApplication sharedApplication].keyWindow;
+    UIViewController *rootViewController = window.rootViewController;
+    while (rootViewController.presentedViewController) {
+        rootViewController = rootViewController.presentedViewController;
+    }
     GADRequest *request = [GADRequest request];
+    request.requestAgent = @"MoPub";
     
 #if (TARGET_OS_SIMULATOR)
     
     request.testDevices = @[ kGADSimulatorID ];
     
 #endif
-    
+
     NSNumber *genderInNumFormat = [info objectForKey:kAdConfigGender];
     if (genderInNumFormat != nil) {
         request.gender = [genderInNumFormat integerValue];
@@ -63,63 +85,134 @@
     if (contentUrl != nil) {
         request.contentURL = contentUrl;
     }
+
+    GADNativeAdImageAdLoaderOptions *nativeAdImageLoaderOptions =
+    [[GADNativeAdImageAdLoaderOptions alloc] init];
+    nativeAdImageLoaderOptions.disableImageLoading = YES;
+    nativeAdImageLoaderOptions.shouldRequestMultipleImages = NO;
+    nativeAdImageLoaderOptions.preferredImageOrientation =
+    GADNativeAdImageAdLoaderOptionsOrientationAny;
     
-    request.requestAgent = @"MoPub";
-    [self.loader loadRequest:request];
+    // In GADNativeAdViewAdOptions, the default preferredAdChoicesPosition is
+    // GADAdChoicesPositionTopRightCorner.
+    GADNativeAdViewAdOptions *nativeAdViewAdOptions = [[GADNativeAdViewAdOptions alloc] init];
+    nativeAdViewAdOptions.preferredAdChoicesPosition = adChoicesPosition;
+    
+    self.adLoader = [[GADAdLoader alloc]
+                     initWithAdUnitID:adUnitID
+                     rootViewController:rootViewController
+                     adTypes:@[ kGADAdLoaderAdTypeNativeAppInstall, kGADAdLoaderAdTypeNativeContent ]
+                     options:@[ nativeAdImageLoaderOptions, nativeAdViewAdOptions ]];
+    self.adLoader.delegate = self;
+    [self.adLoader loadRequest:request];
 }
 
-- (void)adLoader:(GADAdLoader *)adLoader didReceiveNativeAppInstallAd:(GADNativeAppInstallAd *)nativeAppInstallAd {
-    MPLogDebug(@"MOPUB: Did receive app install ad");
-    
-    MPGoogleAdMobNativeAdAdapter *adapter = [[MPGoogleAdMobNativeAdAdapter alloc] initWithAdMobNativeAppInstallAd:nativeAppInstallAd];
-    
-    MPNativeAd *interfaceAd = [[MPNativeAd alloc] initWithAdAdapter:adapter];
-    
-    NSMutableArray *imageArray = [NSMutableArray array];
-    
-    for (GADNativeAdImage *images in nativeAppInstallAd.images) {
-        if(images.imageURL){
-            [imageArray addObject:images.imageURL];
-        }
-    }
-    
-    [super precacheImagesWithURLs:imageArray completionBlock:^(NSArray *errors) {
-        if ([errors count]) {
-            [self.delegate nativeCustomEvent:self didFailToLoadAdWithError:errors[0]];
-        } else {
-            [self.delegate nativeCustomEvent:self didLoadAd:interfaceAd];
-        }
-    }];
-}
+#pragma mark GADAdLoaderDelegate implementation
 
-- (void)adLoader:(GADAdLoader *)adLoader didReceiveNativeContentAd:(GADNativeContentAd *)nativeContentAd
-{
-    MPLogDebug(@"MOPUB: Did receive nativeAd");
-
-    MPGoogleAdMobNativeAdAdapter *adapter = [[MPGoogleAdMobNativeAdAdapter alloc] initWithAdMobNativeContentAd:nativeContentAd];    
-    MPNativeAd *interfaceAd = [[MPNativeAd alloc] initWithAdAdapter:adapter];
-    
-    NSMutableArray *imageArray = [NSMutableArray array];
-    
-    for (GADNativeAdImage *images in nativeContentAd.images) {
-        if(images.imageURL){
-            [imageArray addObject:images.imageURL];
-        }
-    }
-    
-    [super precacheImagesWithURLs:imageArray completionBlock:^(NSArray *errors) {
-        if ([errors count]) {
-            [self.delegate nativeCustomEvent:self didFailToLoadAdWithError:errors[0]];
-        } else {
-            [self.delegate nativeCustomEvent:self didLoadAd:interfaceAd];
-        }
-    }];
-}
-
-- (void)adLoader:(GADAdLoader *)adLoader didFailToReceiveAdWithError:(GADRequestError *)error
-{
-    MPLogDebug(@"MOPUB: AdMob ad failed to load with error (customEvent): %@", error.description);
+- (void)adLoader:(GADAdLoader *)adLoader didFailToReceiveAdWithError:(GADRequestError *)error {
     [self.delegate nativeCustomEvent:self didFailToLoadAdWithError:error];
 }
 
+#pragma mark GADNativeAppInstallAdLoaderDelegate implementation
+
+- (void)adLoader:(GADAdLoader *)adLoader
+didReceiveNativeAppInstallAd:(GADNativeAppInstallAd *)nativeAppInstallAd {
+    if (![self isValidAppInstallAd:nativeAppInstallAd]) {
+        MPGoogleLogInfo(@"App install ad is missing one or more required assets, failing the request");
+        [self.delegate nativeCustomEvent:self
+                didFailToLoadAdWithError:MPNativeAdNSErrorForInvalidAdServerResponse(
+                                                                                     @"Missing one or more required assets.")];
+        return;
+    }
+    
+    MPGoogleAdMobNativeAdAdapter *adapter =
+    [[MPGoogleAdMobNativeAdAdapter alloc] initWithAdMobNativeAppInstallAd:nativeAppInstallAd];
+    MPNativeAd *moPubNativeAd = [[MPNativeAd alloc] initWithAdAdapter:adapter];
+    
+    NSMutableArray *imageURLs = [NSMutableArray array];
+    if ([moPubNativeAd.properties[kAdIconImageKey] length]) {
+        if (![MPNativeAdUtils addURLString:moPubNativeAd.properties[kAdIconImageKey]
+                                toURLArray:imageURLs]) {
+            [self.delegate nativeCustomEvent:self
+                    didFailToLoadAdWithError:MPNativeAdNSErrorForInvalidImageURL()];
+        }
+    }
+    
+    if ([moPubNativeAd.properties[kAdMainImageKey] length]) {
+        if (![MPNativeAdUtils addURLString:moPubNativeAd.properties[kAdMainImageKey]
+                                toURLArray:imageURLs]) {
+            [self.delegate nativeCustomEvent:self
+                    didFailToLoadAdWithError:MPNativeAdNSErrorForInvalidImageURL()];
+        }
+    }
+    
+    [super precacheImagesWithURLs:imageURLs
+                  completionBlock:^(NSArray *errors) {
+                      if (errors) {
+                          [self.delegate nativeCustomEvent:self
+                                  didFailToLoadAdWithError:MPNativeAdNSErrorForImageDownloadFailure()];
+                      } else {
+                          [self.delegate nativeCustomEvent:self didLoadAd:moPubNativeAd];
+                      }
+                  }];
+}
+
+#pragma mark GADNativeContentAdLoaderDelegate implementation
+
+- (void)adLoader:(GADAdLoader *)adLoader
+didReceiveNativeContentAd:(GADNativeContentAd *)nativeContentAd {
+    if (![self isValidContentAd:nativeContentAd]) {
+        MPGoogleLogInfo(@"Content ad is missing one or more required assets, failing the request");
+        [self.delegate nativeCustomEvent:self
+                didFailToLoadAdWithError:MPNativeAdNSErrorForInvalidAdServerResponse(
+                                                                                     @"Missing one or more required assets.")];
+        return;
+    }
+    
+    MPGoogleAdMobNativeAdAdapter *adapter =
+    [[MPGoogleAdMobNativeAdAdapter alloc] initWithAdMobNativeContentAd:nativeContentAd];
+    MPNativeAd *interfaceAd = [[MPNativeAd alloc] initWithAdAdapter:adapter];
+    
+    NSMutableArray *imageURLs = [NSMutableArray array];
+    
+    if ([interfaceAd.properties[kAdIconImageKey] length]) {
+        if (![MPNativeAdUtils addURLString:interfaceAd.properties[kAdIconImageKey]
+                                toURLArray:imageURLs]) {
+            [self.delegate nativeCustomEvent:self
+                    didFailToLoadAdWithError:MPNativeAdNSErrorForInvalidImageURL()];
+        }
+    }
+    
+    if ([interfaceAd.properties[kAdMainImageKey] length]) {
+        if (![MPNativeAdUtils addURLString:interfaceAd.properties[kAdMainImageKey]
+                                toURLArray:imageURLs]) {
+            [self.delegate nativeCustomEvent:self
+                    didFailToLoadAdWithError:MPNativeAdNSErrorForInvalidImageURL()];
+        }
+    }
+    
+    [super precacheImagesWithURLs:imageURLs
+                  completionBlock:^(NSArray *errors) {
+                      if (errors) {
+                          [self.delegate nativeCustomEvent:self
+                                  didFailToLoadAdWithError:MPNativeAdNSErrorForImageDownloadFailure()];
+                      } else {
+                          [self.delegate nativeCustomEvent:self didLoadAd:interfaceAd];
+                      }
+                  }];
+}
+
+#pragma mark - Private Methods
+
+/// Checks the app install ad has required assets or not.
+- (BOOL)isValidAppInstallAd:(GADNativeAppInstallAd *)appInstallAd {
+    return (appInstallAd.headline && appInstallAd.body && appInstallAd.icon &&
+            appInstallAd.images.count && appInstallAd.callToAction);
+}
+
+/// Checks the content ad has required assets or not.
+- (BOOL)isValidContentAd:(GADNativeContentAd *)contentAd {
+    return (contentAd.headline && contentAd.body && contentAd.logo && contentAd.images.count &&
+            contentAd.callToAction);
+}
 @end
