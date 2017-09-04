@@ -7,6 +7,7 @@
 #import "MPNativeAdError.h"
 #import "MPNativeAdUtils.h"
 #import "MPAdConfiguration.h"
+#import <CoreLocation/CoreLocation.h>
 
 static void MPGoogleLogInfo(NSString *message) {
     message = [[NSString alloc] initWithFormat:@"<Google Adapter> - %@", message];
