@@ -1080,6 +1080,7 @@
 		E01E68B919954F38001FAAC4 /* MPCollectionViewAdPlacerCategoriesSpec.mm in Sources */ = {isa = PBXBuildFile; fileRef = E0A8AA0D1992BBF20007BE82 /* MPCollectionViewAdPlacerCategoriesSpec.mm */; };
 		E0D87C8219900E44000E2992 /* MPTableViewAdPlacerCategoriesSpec.mm in Sources */ = {isa = PBXBuildFile; fileRef = E0D87C8119900E44000E2992 /* MPTableViewAdPlacerCategoriesSpec.mm */; };
 		E38F131F574626CE4BCE1771 /* libPods-Specs.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 228C5BC23B424BB6B3D75FE7 /* libPods-Specs.a */; };
+		F4EF4CFA1F6855E500A456FE /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = F4EF4CF91F6855E500A456FE /* Info.plist */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1443,7 +1444,6 @@
 		57098CDB1A2458D00005A153 /* NSHTTPURLResponse+MPAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSHTTPURLResponse+MPAdditions.h"; sourceTree = "<group>"; };
 		57098CDC1A2458D00005A153 /* NSHTTPURLResponse+MPAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSHTTPURLResponse+MPAdditions.m"; sourceTree = "<group>"; };
 		570A005B19D6206800065388 /* MoPub.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MoPub.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
-		570A005E19D6206800065388 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		570F754C19820ADB00466F6F /* MPAdPlacerInvocation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPAdPlacerInvocation.h; sourceTree = "<group>"; };
 		570F754D19820ADB00466F6F /* MPAdPlacerInvocation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPAdPlacerInvocation.m; sourceTree = "<group>"; };
 		571122D7197DB1610090DCDC /* FakeMPStreamAdPlacementData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FakeMPStreamAdPlacementData.h; sourceTree = "<group>"; };
@@ -2125,6 +2125,7 @@
 		BCF0FA981DC9536B00ADFE4F /* MPCountdownTimerView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPCountdownTimerView.m; sourceTree = "<group>"; };
 		E0A8AA0D1992BBF20007BE82 /* MPCollectionViewAdPlacerCategoriesSpec.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPCollectionViewAdPlacerCategoriesSpec.mm; sourceTree = "<group>"; };
 		E0D87C8119900E44000E2992 /* MPTableViewAdPlacerCategoriesSpec.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPTableViewAdPlacerCategoriesSpec.mm; sourceTree = "<group>"; };
+		F4EF4CF91F6855E500A456FE /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -2471,17 +2472,9 @@
 		570A005C19D6206800065388 /* MoPubResources */ = {
 			isa = PBXGroup;
 			children = (
-				570A005D19D6206800065388 /* Supporting Files */,
+				F4EF4CF91F6855E500A456FE /* Info.plist */,
 			);
 			path = MoPubResources;
-			sourceTree = "<group>";
-		};
-		570A005D19D6206800065388 /* Supporting Files */ = {
-			isa = PBXGroup;
-			children = (
-				570A005E19D6206800065388 /* Info.plist */,
-			);
-			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
 		5711234B197F335C0090DCDC /* Categories */ = {
@@ -4037,8 +4030,7 @@
 				TargetAttributes = {
 					2AAA8DF81D95C77B006962E8 = {
 						CreatedOnToolsVersion = 8.0;
-						DevelopmentTeam = 4S7XS533V3;
-						ProvisioningStyle = Automatic;
+						ProvisioningStyle = Manual;
 					};
 					570A005A19D6206800065388 = {
 						CreatedOnToolsVersion = 6.0;
@@ -4189,6 +4181,7 @@
 				57E20E851BCC63A400B51C8C /* MPPlayBtn@2x.png in Resources */,
 				5724084B1A68676C009271B8 /* MPCloseButtonX@3x.png in Resources */,
 				57401A4A1B7AAEF0000EEA64 /* MPDAAIcon@3x.png in Resources */,
+				F4EF4CFA1F6855E500A456FE /* Info.plist in Resources */,
 				57E20E881BCC63A400B51C8C /* MPUnmutedBtn@2x.png in Resources */,
 				57E20E7F1BCC63A400B51C8C /* MPCloseBtn@2x.png in Resources */,
 				57E20E861BCC63A400B51C8C /* MPPlayBtn@3x.png in Resources */,
@@ -5398,9 +5391,7 @@
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_SUSPICIOUS_MOVES = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = 4S7XS533V3;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -5435,10 +5426,8 @@
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_SUSPICIOUS_MOVES = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = 4S7XS533V3;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -5517,6 +5506,7 @@
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
+				INFOPLIST_FILE = MoPubResources/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Bundles";
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				MTL_ENABLE_DEBUG_INFO = YES;
@@ -5524,7 +5514,6 @@
 				PRODUCT_NAME = MoPub;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
-				WRAPPER_EXTENSION = bundle;
 			};
 			name = Debug;
 		};
@@ -5546,6 +5535,7 @@
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
+				INFOPLIST_FILE = MoPubResources/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Bundles";
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				MTL_ENABLE_DEBUG_INFO = NO;
@@ -5553,7 +5543,6 @@
 				PRODUCT_NAME = MoPub;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
-				WRAPPER_EXTENSION = bundle;
 			};
 			name = Release;
 		};
