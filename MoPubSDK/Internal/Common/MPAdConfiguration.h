@@ -55,15 +55,12 @@ extern NSString * const kAdTypeClear;
 extern NSString * const kAdTypeNative;
 extern NSString * const kAdTypeNativeVideo;
 
-<<<<<<< HEAD
 extern NSString * const kAdConfigGender;
 extern NSString * const kAdConfigBirthdate;
 extern NSString * const kAdConfigContentUrl;
-=======
 extern NSString * const kClickthroughExperimentBrowserAgent;
-
 extern NSString * const kViewabilityDisableHeaderKey;
->>>>>>> mopub-master
+
 
 @interface MPAdConfiguration : NSObject
 
