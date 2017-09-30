@@ -55,9 +55,15 @@ extern NSString * const kAdTypeClear;
 extern NSString * const kAdTypeNative;
 extern NSString * const kAdTypeNativeVideo;
 
+<<<<<<< HEAD
 extern NSString * const kAdConfigGender;
 extern NSString * const kAdConfigBirthdate;
 extern NSString * const kAdConfigContentUrl;
+=======
+extern NSString * const kClickthroughExperimentBrowserAgent;
+
+extern NSString * const kViewabilityDisableHeaderKey;
+>>>>>>> mopub-master
 
 @interface MPAdConfiguration : NSObject
 
@@ -87,8 +93,8 @@ extern NSString * const kAdConfigContentUrl;
 @property (nonatomic, copy) NSString *headerAdType;
 @property (nonatomic, assign) NSInteger nativeVideoPlayVisiblePercent;
 @property (nonatomic, assign) NSInteger nativeVideoPauseVisiblePercent;
-@property (nonatomic, assign) NSInteger nativeVideoImpressionMinVisiblePercent;
-@property (nonatomic, assign) NSTimeInterval nativeVideoImpressionVisible;
+@property (nonatomic, assign) NSInteger nativeImpressionMinVisiblePercent;
+@property (nonatomic, assign) NSTimeInterval nativeImpressionMinVisibleTimeInterval;
 @property (nonatomic, assign) NSTimeInterval nativeVideoMaxBufferingTime;
 @property (nonatomic) NSDictionary *nativeVideoTrackers;
 @property (nonatomic, readonly) NSArray *availableRewards;

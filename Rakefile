@@ -172,7 +172,7 @@ desc "Trim Whitespace"
 task :trim_whitespace do
   head "Trimming Whitespace"
 
-  system_or_exit(%Q[git status --short | awk '{if ($1 != "D" && $1 != "R") for (i=2; i<=NF; i++) printf("%s%s", $i, i<NF ? " " : ""); print ""}' | grep -e '.*.[mh]"*$' | xargs sed -i '' -e 's/	/    /g;s/ *$//g;'])
+  system_or_exit(%Q[git status --short | awk '{if ($1 != "D" && $1 != "R") for (i=2; i<=NF; i++) printf("%s%s", "$i", i<NF ? " " : ""); print ""}' | grep -e '.*.[mh]"*$' | xargs sed -i '' -e 's/	/    /g;s/ *$//g;'])
 end
 
 desc "Cleans the build directory"
@@ -200,6 +200,11 @@ namespace :mopubsdk do
     available_sdk_versions.each do |sdk_version|
       head "Building MoPubSDK+Networks for #{sdk_version}"
       build :project => "MoPubSDK", :target => "MoPubSDK+Networks", :sdk_version => sdk_version
+    end
+
+    available_sdk_versions.each do |sdk_version|
+      head "Building MoPubSDK-ExcludeNative for #{sdk_version}"
+      build :project => "MoPubSDK", :target => "MoPubSDK-ExcludeNative", :sdk_version => sdk_version
     end
     
     head "SUCCESS"
