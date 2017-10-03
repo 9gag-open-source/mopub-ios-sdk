@@ -1226,7 +1226,7 @@
 		E01E68B919954F38001FAAC4 /* MPCollectionViewAdPlacerCategoriesSpec.mm in Sources */ = {isa = PBXBuildFile; fileRef = E0A8AA0D1992BBF20007BE82 /* MPCollectionViewAdPlacerCategoriesSpec.mm */; };
 		E0D87C8219900E44000E2992 /* MPTableViewAdPlacerCategoriesSpec.mm in Sources */ = {isa = PBXBuildFile; fileRef = E0D87C8119900E44000E2992 /* MPTableViewAdPlacerCategoriesSpec.mm */; };
 		E38F131F574626CE4BCE1771 /* libPods-Specs.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 228C5BC23B424BB6B3D75FE7 /* libPods-Specs.a */; };
-		F4EF4CFA1F6855E500A456FE /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = F4EF4CF91F6855E500A456FE /* Info.plist */; };
+		F4B384D41F83A17D00501472 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F4B384D31F83A17D00501472 /* Default-568h@2x.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -2337,6 +2337,7 @@
 		BCF0FA981DC9536B00ADFE4F /* MPCountdownTimerView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPCountdownTimerView.m; sourceTree = "<group>"; };
 		E0A8AA0D1992BBF20007BE82 /* MPCollectionViewAdPlacerCategoriesSpec.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPCollectionViewAdPlacerCategoriesSpec.mm; sourceTree = "<group>"; };
 		E0D87C8119900E44000E2992 /* MPTableViewAdPlacerCategoriesSpec.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPTableViewAdPlacerCategoriesSpec.mm; sourceTree = "<group>"; };
+		F4B384D31F83A17D00501472 /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
 		F4EF4CF91F6855E500A456FE /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -3611,6 +3612,7 @@
 				AEF9D632171CA8AD005AAA5A /* MPInterstitialAdControllerSpec.mm */,
 				AEF9D633171CA8AD005AAA5A /* MPSpecHelper.h */,
 				AEF9D634171CA8AD005AAA5A /* MPSpecHelper.mm */,
+				F4B384D31F83A17D00501472 /* Default-568h@2x.png */,
 				AEF9D635171CA8AD005AAA5A /* Specs-Info.plist */,
 				AEF9D636171CA8AD005AAA5A /* Specs-Prefix.pch */,
 				A749F5C91A32A30300B4E2FC /* MoPubSpec.mm */,
@@ -4320,7 +4322,7 @@
 		AEF1F32016EF9AD700273462 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0830;
+				LastUpgradeCheck = 0900;
 				ORGANIZATIONNAME = MoPub;
 				TargetAttributes = {
 					2AAA8DF81D95C77B006962E8 = {
@@ -4477,7 +4479,6 @@
 				57E20E851BCC63A400B51C8C /* MPPlayBtn@2x.png in Resources */,
 				5724084B1A68676C009271B8 /* MPCloseButtonX@3x.png in Resources */,
 				57401A4A1B7AAEF0000EEA64 /* MPDAAIcon@3x.png in Resources */,
-				F4EF4CFA1F6855E500A456FE /* Info.plist in Resources */,
 				57E20E881BCC63A400B51C8C /* MPUnmutedBtn@2x.png in Resources */,
 				57E20E7F1BCC63A400B51C8C /* MPCloseBtn@2x.png in Resources */,
 				57E20E861BCC63A400B51C8C /* MPPlayBtn@3x.png in Resources */,
@@ -4503,6 +4504,7 @@
 				A78B73D31BA9061C00010BE6 /* extensions-multiple.xml in Resources */,
 				A72210C51B8CA8BE0099DCF6 /* linear-absolute-skipoffset-zero.xml in Resources */,
 				A78B6FF21BA8A1AB00010BE6 /* extension-mopubviewabilitytracker-invalid.xml in Resources */,
+				F4B384D41F83A17D00501472 /* Default-568h@2x.png in Resources */,
 				A72210A11B8B2DFF0099DCF6 /* invalid-1.xml in Resources */,
 				A7220FC71B6ABDE60099DCF6 /* vast-w-companion-ad.xml in Resources */,
 				57214DE21A66F9B20075BF95 /* MPCloseButtonX@2x.png in Resources */,
@@ -6104,6 +6106,7 @@
 					"-lstdc++",
 					"$(inherited)",
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mopub.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				WRAPPER_EXTENSION = app;
@@ -6168,6 +6171,7 @@
 					"-lstdc++",
 					"$(inherited)",
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mopub.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				WRAPPER_EXTENSION = app;
@@ -6180,22 +6184,37 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = NO;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				ONLY_ACTIVE_ARCH = YES;
@@ -6211,15 +6230,29 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = NO;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				OTHER_CFLAGS = "-fembed-bitcode";
