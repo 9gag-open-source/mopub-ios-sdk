@@ -20,6 +20,9 @@
 #import "NSURL+MPAdditions.h"
 #import "MPInternalUtils.h"
 #import "MPAPIEndPoints.h"
+#import "MoPub.h"
+#import "MPViewabilityTracker.h"
+#import "NSString+MPAdditions.h"
 
 #ifndef NSFoundationVersionNumber_iOS_6_1
 #define NSFoundationVersionNumber_iOS_6_1 993.00
@@ -36,7 +39,7 @@
 @property (nonatomic, assign) BOOL userInteractedWithWebView;
 @property (nonatomic, strong) MPUserInteractionGestureRecognizer *userInteractionRecognizer;
 @property (nonatomic, assign) CGRect frame;
-@property (nonatomic, assign) BOOL hasPerformedInitialLoad;
+@property (nonatomic, strong, readwrite) MPViewabilityTracker *viewabilityTracker;
 
 - (void)performActionForMoPubSpecificURL:(NSURL *)URL;
 - (BOOL)shouldIntercept:(NSURL *)URL navigationType:(UIWebViewNavigationType)navigationType;
@@ -75,6 +78,7 @@
 
 - (void)dealloc
 {
+    [self.viewabilityTracker stopTracking];
     self.userInteractionRecognizer.delegate = nil;
     [self.userInteractionRecognizer removeTarget:self action:nil];
     [self.destinationDisplayAgent cancel];
@@ -139,6 +143,9 @@
     [self.view mp_setScrollable:configuration.scrollable];
     [self.view disableJavaScriptDialogs];
 
+    // Initialize viewability trackers before loading self.view
+    [self init3rdPartyViewabilityTrackers];
+
     [self.view loadHTMLString:[configuration adResponseHTMLString]
                       baseURL:[NSURL URLWithString:[MPAPIEndpoints baseURL]]
      ];
@@ -150,6 +157,12 @@
 {
     switch (event) {
         case MPAdWebViewEventAdDidAppear:
+            // For banner, viewability tracker is handled right after adView is initialized (not here).
+            // For interstitial (handled here), we start tracking viewability if it's not started during adView initialization.
+            if (![self shouldStartViewabilityDuringInitialization]) {
+                [self startViewabilityTracker];
+            }
+
             [self.view stringByEvaluatingJavaScriptFromString:@"webviewDidAppear();"];
             break;
         case MPAdWebViewEventAdDidDisappear:
@@ -158,6 +171,11 @@
         default:
             break;
     }
+}
+
+- (void)startViewabilityTracker
+{
+    [self.viewabilityTracker startTracking];
 }
 
 - (void)disableRequestHandling
@@ -232,20 +250,6 @@
     [self.view disableJavaScriptDialogs];
 }
 
-- (void)webViewDidFinishLoad:(MPWebView *)webView
-{
-    if (!self.hasPerformedInitialLoad) {
-        // excuse interstitials from user tapped check since it's already a takeover experience
-        // and certain videos may delay tap gesture recognition
-        if (self.configuration.adType == MPAdTypeInterstitial) {
-            self.userInteractedWithWebView = YES;
-        }
-
-        self.hasPerformedInitialLoad = YES;
-    }
-}
-
-
 #pragma mark - MoPub-specific URL handlers
 - (void)performActionForMoPubSpecificURL:(NSURL *)URL
 {
@@ -298,6 +302,27 @@
 
 #pragma mark - Utility
 
+- (void)init3rdPartyViewabilityTrackers
+{
+    self.viewabilityTracker = [[MPViewabilityTracker alloc] initWithAdView:self.view isVideo:self.configuration.isVastVideoPlayer startTrackingImmediately:[self shouldStartViewabilityDuringInitialization]];
+}
+
+- (BOOL)shouldStartViewabilityDuringInitialization
+{
+    // If viewabile impression tracking experiment is enabled, we defer viewability trackers until
+    // ad view is at least x pixels on screen for y seconds, where x and y are configurable values defined in server.
+    if (self.adConfiguration.visibleImpressionTrackingEnabled) {
+        return NO;
+    }
+
+    return ![self isInterstitialAd];
+}
+
+- (BOOL)isInterstitialAd
+{
+    return (self.configuration.adType == MPAdTypeInterstitial);
+}
+
 - (void)initAdAlertManager
 {
     self.adAlertManager.adConfiguration = self.configuration;
@@ -333,15 +358,6 @@
                                         @"evt.initEvent('orientationchange',true,true);window.dispatchEvent(evt);})();",
                                         angle];
     [self.view stringByEvaluatingJavaScriptFromString:orientationEventScript];
-
-    // XXX: If the UIWebView is rotated off-screen (which may happen with interstitials), its
-    // content may render off-center upon display. We compensate by setting the viewport meta tag's
-    // 'width' attribute to be the size of the webview.
-    NSString *viewportUpdateScript = [NSString stringWithFormat:
-                                      @"document.querySelector('meta[name=viewport]')"
-                                      @".setAttribute('content', 'width=%f;', false);",
-                                      self.view.frame.size.width];
-    [self.view stringByEvaluatingJavaScriptFromString:viewportUpdateScript];
 
     // XXX: In iOS 7, off-screen UIWebViews will fail to render certain image creatives.
     // Specifically, creatives that only contain an <img> tag whose src attribute uses a 302
