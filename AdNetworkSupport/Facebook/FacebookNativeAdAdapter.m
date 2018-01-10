@@ -27,6 +27,7 @@ NSString *const kFBVideoAdsEnabledKey = @"video_enabled";
 
 - (instancetype)initWithFBNativeAd:(FBNativeAd *)fbNativeAd adProperties:(NSDictionary *)adProps
 {
+	NSLog(@"[FacebookAd] initWithFBNativeAd begin");
     if (self = [super init]) {
         _fbNativeAd = fbNativeAd;
         _fbNativeAd.delegate = self;
@@ -90,7 +91,7 @@ NSString *const kFBVideoAdsEnabledKey = @"video_enabled";
             }
         }
     }
-
+	NSLog(@"[FacebookAd] initWithFBNativeAd finish");
     return self;
 }
 
@@ -127,8 +128,10 @@ NSString *const kFBVideoAdsEnabledKey = @"video_enabled";
 - (void)nativeAdWillLogImpression:(FBNativeAd *)nativeAd
 {
     if ([self.delegate respondsToSelector:@selector(nativeAdWillLogImpression:)]) {
+		NSLog(@"[FacebookAd] nativeAdWillLogImpression did call");
         [self.delegate nativeAdWillLogImpression:self];
     } else {
+		NSLog(@"[FacebookAd] does not implement impression tracking callback. Impressions likely not being tracked.");
         MPLogWarn(@"Delegate does not implement impression tracking callback. Impressions likely not being tracked.");
     }
 }
@@ -136,8 +139,10 @@ NSString *const kFBVideoAdsEnabledKey = @"video_enabled";
 - (void)nativeAdDidClick:(FBNativeAd *)nativeAd
 {
     if ([self.delegate respondsToSelector:@selector(nativeAdDidClick:)]) {
+		NSLog(@"[FacebookAd] nativeAdDidClick did call");
         [self.delegate nativeAdDidClick:self];
     } else {
+		NSLog(@"[FacebookAd] Delegate does not implement click tracking callback. Clicks likely not being tracked.");
         MPLogWarn(@"Delegate does not implement click tracking callback. Clicks likely not being tracked.");
     }
 
@@ -146,6 +151,7 @@ NSString *const kFBVideoAdsEnabledKey = @"video_enabled";
 
 - (void)nativeAdDidFinishHandlingClick:(FBNativeAd *)nativeAd
 {
+	NSLog(@"[FacebookAd] nativeAdDidFinishHandlingClick did call");
     [self.delegate nativeAdDidDismissModalForAdapter:self];
 }
 

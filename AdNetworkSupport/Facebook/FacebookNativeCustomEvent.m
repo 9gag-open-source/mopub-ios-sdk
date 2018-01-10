@@ -53,6 +53,7 @@ static BOOL gVideoEnabled = NO;
 
 - (void)nativeAdDidLoad:(FBNativeAd *)nativeAd
 {
+	NSLog(@"[FacebookAd] nativeAdDidLoad did call");
     FacebookNativeAdAdapter *adAdapter = [[FacebookNativeAdAdapter alloc] initWithFBNativeAd:nativeAd adProperties:@{kFBVideoAdsEnabledKey:@(self.videoEnabled)}];
     MPNativeAd *interfaceAd = [[MPNativeAd alloc] initWithAdAdapter:adAdapter];
 
@@ -79,6 +80,7 @@ static BOOL gVideoEnabled = NO;
 
 - (void)nativeAd:(FBNativeAd *)nativeAd didFailWithError:(NSError *)error
 {
+	NSLog(@"[FacebookAd] nativeAd didFailWithError error: %@", error);
     if (error.code == FacebookNoFillErrorCode) {
         [self.delegate nativeCustomEvent:self didFailToLoadAdWithError:MPNativeAdNSErrorForNoInventory()];
     } else {
