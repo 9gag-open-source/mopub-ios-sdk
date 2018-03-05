@@ -460,8 +460,7 @@ static const NSUInteger kIndexPathItemIndex = 1;
 // Determines whether or not insertionPath is close enough to the visible cells to place an ad at insertionPath.
 - (BOOL)shouldPlaceAdAtIndexPath:(NSIndexPath *)insertionPath
 {
-    if (!self.topConsideredIndexPath || !self.bottomConsideredIndexPath || !insertionPath ||
-        [self.topConsideredIndexPath compare:insertionPath] == NSOrderedSame) {
+    if (!self.topConsideredIndexPath || !self.bottomConsideredIndexPath || !insertionPath) {
         return NO;
     }
 
